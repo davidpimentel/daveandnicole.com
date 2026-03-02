@@ -8,23 +8,48 @@ import "../../app.css";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
+    />
     <title>Dave and Nicole</title>
   </head>
-  <body>
-    <div
-      class="grid grid-cols-1 md:grid-cols-2 justify-center items-center h-dvh gap-8 mx-auto px-8 max-w-6xl"
-    >
-      <a
-        href="https://baby.daveandnicole.com"
-        class="flex items-center justify-center text-center h-60 rounded-3xl bg-gray-100 text-black text-2xl"
-        >Baby</a
+  <body class="bg-neutral-200">
+    <div class="flex flex-col h-dvh">
+      <h1 class="text-[3rem] md:text-[4rem] text-gray-700 text-center pt-20">
+        Dave and Nicole's Website!!!!!
+      </h1>
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 justify-center items-center flex-1 w-full gap-8 mx-auto px-8 max-w-6xl"
       >
-      <a
-        href="https://wedding.daveandnicole.com"
-        class="flex items-center justify-center text-center h-60 rounded-3xl bg-gray-100 text-black text-2xl"
-        >Wedding</a
-      >
+        <a
+          href="https://baby.daveandnicole.com"
+          class:list={[
+            "flex items-center justify-center text-center aspect-square h-auto",
+            "rounded-3xl bg-lime-800 text-white text-[3rem] shadow-xl",
+            "transition-all duration-500 hover:-translate-1 hover:shadow-2xl",
+          ]}
+        >
+          <div class="flex flex-col gap-2 items-center">
+            <div class="ph ph-baby"></div>
+            Baby
+          </div>
+        </a>
+        <a
+          href="https://wedding.daveandnicole.com"
+          class:list={[
+            "flex items-center justify-center text-center aspect-square h-auto",
+            "rounded-3xl bg-lime-800 text-white text-[3rem] shadow-xl",
+            "transition-all duration-500 hover:-translate-1 hover:shadow-2xl",
+          ]}
+        >
+          <div class="flex flex-col gap-2 items-center">
+            <div class="ph ph-heart"></div>
+            Wedding
+          </div>
+        </a>
+      </div>
     </div>
   </body>
 </html>

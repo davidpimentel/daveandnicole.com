@@ -1,0 +1,56 @@
+---
+import urls from "../data/owen-registry-urls.json";
+import Layout from "../layout/Layout.astro";
+import * as cheerio from "cheerio";
+
+const urlsWithOg = await Promise.all(
+  urls.map(async (url) => {
+    if (url.image) {
+      return url;
+    }
+    try {
+      const page = await fetch(url.url);
+      const body = await page.text();
+      const $ = cheerio.load(body);
+      const ogImage = $('meta[property="og:image"]');
+      const ogImageUrl = ogImage ? ogImage.attr("content") : null;
+
+      return {
+        image: ogImageUrl,
+        ...url,
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        image: null,
+        ...url,
+      };
+    }
+  }),
+);
+---
+
+<Layout>
+  <div class="p-20">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-8">
+      {
+        urlsWithOg.map((u) => {
+          return (
+            <a href={u.url}>
+              <div class="flex flex-col gap-4">
+                {u.image ? (
+                  <img src={u.image} class="aspect-square" />
+                ) : (
+                  <div class="bg-gray-200 aspect-square flex items-center justify-center @container">
+                    <i class="ph ph-image-broken text-[25cqi] text-gray-300" />
+                  </div>
+                )}
+                <div>{u.name}</div>
+              </div>
+            </a>
+          );
+        })
+      }
+    </div>
+  </div>
+</Layout>

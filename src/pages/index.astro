@@ -1,21 +1,9 @@
 ---
-import "../../app.css";
+import Layout from "../layout/Layout.astro";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width" />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
-    />
-    <title>Dave and Nicole</title>
-  </head>
-  <body class="bg-neutral-200">
+<Layout>
+  <div class="bg-neutral-200">
     <div class="flex flex-col h-dvh">
       <h1 class="text-[3rem] md:text-[4rem] text-gray-700 text-center pt-20">
         Dave and Nicole's Website!!!!!
@@ -51,5 +39,5 @@ import "../../app.css";
         </a>
       </div>
     </div>
-  </body>
-</html>
+  </div>
+</Layout>

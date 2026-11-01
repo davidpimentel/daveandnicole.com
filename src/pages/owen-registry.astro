@@ -12,11 +12,9 @@ const enrichedUrls = await Promise.all(
     try {
       const page = await fetch(url.url);
       const body = await page.text();
-      console.log(body);
       const $ = cheerio.load(body);
       const ogImage = $("meta");
       const ogImageUrl = ogImage ? ogImage.attr("property") : null;
-      console.log(ogImage.html());
 
       return {
         ...url,
@@ -34,8 +32,10 @@ const enrichedUrls = await Promise.all(
 ---
 
 <Layout>
-  <div class="p-20">
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-8">
+  <div class="p-5">
+    <div
+      class="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-8"
+    >
       {
         enrichedUrls.map((u) => {
           return (

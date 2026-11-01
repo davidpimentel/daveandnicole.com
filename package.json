@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "daveandnicole",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -9,14 +9,16 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^14.4.3",
     "@tailwindcss/vite": "^4.2.1",
-    "astro": "^5.17.1",
+    "astro": "^7.4.4",
     "cheerio": "^1.2.0",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
     "prettier": "3.8.1",
     "prettier-plugin-astro": "0.14.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.156.0"
   }
 }

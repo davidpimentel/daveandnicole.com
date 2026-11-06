@@ -9,8 +9,11 @@ type Entry = {
   image?: string;
   price?: string;
   note?: string;
+  boughtBy?: string;
 };
-console.log(await env.DANDN_KV.list());
+// const entries: Entry[] = JSON.parse(
+//   '[{"name":"Love Every Toy Kit","url":"https://lovevery.com/pages/subscription-v3/kit-selection","image":"https://lovevery.com/_next/image/?url=https%3A%2F%2Fimages.ctfassets.net%2F0sea1vycfyqy%2FJwOZpORwCxFJnXNMxS9v8%2F2866ca80f663d1dd37ca527a5b2b6180%2FLooker.png&w=1080&q=75&dpl=dpl_8Am1ueURrNHAnEBP5F1JS1KBwJt6","price":"88","note":"Just the 5-6 month kit!"},{"name":"Stroller Blanket","url":"https://www.7amenfant.com/products/blanket-212-evolution-benjamin?_pos=2&_psq=blanket+&_psid=64c6ca455&_ss=e","image":"https://www.7amenfant.com/cdn/shop/products/7AM-Enfant-Blanket-212-Benjamin-Mirage-1.jpg?v=1762461209&width=800","price":"242","note":"We like the mirage color. This is expensive! Consider splitting this with someone"}]',
+// );
 const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
 // const enrichedUrls = await Promise.all(
 //   entries.map(async (url) => {
@@ -41,14 +44,16 @@ const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
 
 <Layout>
   <div class="p-5">
+    <h1 class="text-6xl mb-8">Welcome to Owie's List!</h1>
     <div
-      class="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-8"
+      class="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-10"
+      data-registry={JSON.stringify(entries)}
     >
       {
-        entries.map((u) => {
+        entries.map((u, i) => {
           return (
-            <a href={u.url}>
-              <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center gap-4 h-full">
+              <a target="_blank" href={u.url}>
                 {u.image ? (
                   <img src={u.image} class="aspect-square" />
                 ) : (
@@ -56,12 +61,48 @@ const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
                     <i class="ph ph-image-broken text-[25cqi] text-gray-300" />
                   </div>
                 )}
-                <div>{u.name}</div>
-              </div>
-            </a>
+                <div class="flex justify-between">
+                  <div class="text-xl">{u.name}</div>
+                  <div class="text-xl">${u.price}</div>
+                </div>
+              </a>
+              <div class="text-lg text-gray-600 italic flex-1">{u.note}</div>
+              <button
+                disabled={u.boughtBy}
+                class:list={[
+                  "bg-blue-400 rounded-md p-3 text-white max-w-90 w-full disabled:bg-gray-400",
+                ]}
+                data-index={i}
+              >
+                {u.boughtBy ? `Bought by ${u.boughtBy}` : "Buy for Owie!"}
+              </button>
+            </div>
           );
         })
       }
     </div>
   </div>
 </Layout>
+<script>
+  import { actions } from "astro:actions";
+
+  const registry = JSON.parse(
+    document.querySelector<HTMLDivElement>("[data-registry]")?.dataset
+      .registry || "[]",
+  );
+  const buttons = document.getElementsByTagName("button");
+  for (const button of buttons) {
+    const entryIndex = button.dataset.index
+      ? parseInt(button.dataset.index)
+      : -1;
+    button.addEventListener("click", async () => {
+      registry[entryIndex].boughtBy = "true";
+      const ok = await actions.updateOwieRegistry({
+        owieRegistryJson: JSON.stringify(registry),
+      });
+      if (ok) {
+        button.innerText = "Bought!";
+      }
+    });
+  }
+</script>

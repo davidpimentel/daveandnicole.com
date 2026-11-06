@@ -1,34 +1,42 @@
 ---
-import urls from "../data/owen-registry-urls.json";
 import Layout from "../layout/Layout.astro";
 import * as cheerio from "cheerio";
-
+import { env } from "cloudflare:workers";
 export const prerender = false;
-const enrichedUrls = await Promise.all(
-  urls.map(async (url) => {
-    if (url.image) {
-      return url;
-    }
-    try {
-      const page = await fetch(url.url);
-      const body = await page.text();
-      const $ = cheerio.load(body);
-      const ogImage = $("meta");
-      const ogImageUrl = ogImage ? ogImage.attr("property") : null;
-
-      return {
-        ...url,
-        image: ogImageUrl,
-      };
-    } catch (e) {
-      console.error(e);
-      return {
-        ...url,
-        image: null,
-      };
-    }
-  }),
-);
+type Entry = {
+  name: string;
+  url: string;
+  image?: string;
+  price?: string;
+  note?: string;
+};
+console.log(await env.DANDN_KV.list());
+const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
+// const enrichedUrls = await Promise.all(
+//   entries.map(async (url) => {
+//     if (url.image) {
+//       return url;
+//     }
+//     try {
+//       const page = await fetch(url.url);
+//       const body = await page.text();
+//       const $ = cheerio.load(body);
+//       const ogImage = $("meta");
+//       const ogImageUrl = ogImage ? ogImage.attr("property") : null;
+//
+//       return {
+//         ...url,
+//         image: ogImageUrl,
+//       };
+//     } catch (e) {
+//       console.error(e);
+//       return {
+//         ...url,
+//         image: null,
+//       };
+//     }
+//   }),
+// );
 ---
 
 <Layout>
@@ -37,7 +45,7 @@ const enrichedUrls = await Promise.all(
       class="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-8"
     >
       {
-        enrichedUrls.map((u) => {
+        entries.map((u) => {
           return (
             <a href={u.url}>
               <div class="flex flex-col gap-4">

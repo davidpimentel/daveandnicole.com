@@ -1,20 +1,13 @@
 ---
 import Layout from "../layout/Layout.astro";
-import * as cheerio from "cheerio";
 import { env } from "cloudflare:workers";
+import type { Entry } from "../actions";
 export const prerender = false;
-type Entry = {
-  name: string;
-  url: string;
-  image?: string;
-  price?: string;
-  note?: string;
-  boughtBy?: string;
-};
-// const entries: Entry[] = JSON.parse(
-//   '[{"name":"Love Every Toy Kit","url":"https://lovevery.com/pages/subscription-v3/kit-selection","image":"https://lovevery.com/_next/image/?url=https%3A%2F%2Fimages.ctfassets.net%2F0sea1vycfyqy%2FJwOZpORwCxFJnXNMxS9v8%2F2866ca80f663d1dd37ca527a5b2b6180%2FLooker.png&w=1080&q=75&dpl=dpl_8Am1ueURrNHAnEBP5F1JS1KBwJt6","price":"88","note":"Just the 5-6 month kit!"},{"name":"Stroller Blanket","url":"https://www.7amenfant.com/products/blanket-212-evolution-benjamin?_pos=2&_psq=blanket+&_psid=64c6ca455&_ss=e","image":"https://www.7amenfant.com/cdn/shop/products/7AM-Enfant-Blanket-212-Benjamin-Mirage-1.jpg?v=1762461209&width=800","price":"242","note":"We like the mirage color. This is expensive! Consider splitting this with someone"}]',
-// );
 const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
+// await env.DANDN_KV.put(
+//   "owen-entries",
+//   JSON.stringify(entries.map((entry) => ({ ...entry, boughtBy: undefined }))),
+// );
 // const enrichedUrls = await Promise.all(
 //   entries.map(async (url) => {
 //     if (url.image) {
@@ -85,8 +78,9 @@ const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
 </Layout>
 <script>
   import { actions } from "astro:actions";
+  import type { Entry } from "../actions";
 
-  const registry = JSON.parse(
+  const registry: Entry[] = JSON.parse(
     document.querySelector<HTMLDivElement>("[data-registry]")?.dataset
       .registry || "[]",
   );
@@ -96,12 +90,16 @@ const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
       ? parseInt(button.dataset.index)
       : -1;
     button.addEventListener("click", async () => {
-      registry[entryIndex].boughtBy = "true";
+      const name = prompt("What's your name?");
+      if (!name) return;
+      registry[entryIndex].boughtBy = name;
       const ok = await actions.updateOwieRegistry({
         owieRegistryJson: JSON.stringify(registry),
       });
       if (ok) {
-        button.innerText = "Bought!";
+        button.innerText = `Bought by ${name}`;
+        button.disabled = true;
+        alert("Thank you!");
       }
     });
   }

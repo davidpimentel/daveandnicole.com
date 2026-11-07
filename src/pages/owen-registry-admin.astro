@@ -1,0 +1,287 @@
+---
+import Layout from "../layout/Layout.astro";
+import { env } from "cloudflare:workers";
+import type { Entry } from "../actions";
+export const prerender = false;
+
+// --- HTTP Basic Auth ---
+const authHeader = Astro.request.headers.get("Authorization") || "";
+
+const adminUser = env.ADMIN_USERNAME;
+const adminPass = env.ADMIN_PASSWORD;
+
+if (authHeader) {
+  const credentials = authHeader.replace(/^Basic\s+/i, "");
+  const decoded = atob(credentials);
+  const [username, password] = decoded.split(":", 2);
+  if (username !== adminUser || password !== adminPass) {
+    return new Response("Unauthorized", {
+      status: 401,
+      headers: { "WWW-Authenticate": 'Basic realm="Owen Registry Admin"' },
+    });
+  }
+} else {
+  return new Response("Unauthorized", {
+    status: 401,
+    headers: { "WWW-Authenticate": 'Basic realm="Owen Registry Admin"' },
+  });
+}
+
+// --- Load entries ---
+const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
+const entriesJson = JSON.stringify(entries);
+---
+
+<Layout>
+  <div class="p-5 max-w-6xl mx-auto">
+    <h1 class="text-4xl mb-6">Owen Registry — Admin</h1>
+
+    <div class="overflow-x-auto mb-10">
+      <table class="w-full border-collapse border border-gray-300 text-sm">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="p-2 border border-gray-300">Name</th>
+            <th class="p-2 border border-gray-300">URL</th>
+            <th class="p-2 border border-gray-300">Image</th>
+            <th class="p-2 border border-gray-300">Price</th>
+            <th class="p-2 border border-gray-300">Note</th>
+            <th class="p-2 border border-gray-300">Bought By</th>
+            <th class="p-2 border border-gray-300 w-48">Actions</th>
+          </tr>
+        </thead>
+        <tbody data-entries={entriesJson}>
+          {
+            entries.map((entry, i) => {
+              return (
+                <tr class="border border-gray-300" data-index={i}>
+                  <td class="p-1 border border-gray-300">
+                    <input
+                      class="w-full border border-gray-400 px-1"
+                      value={entry.name}
+                      data-field="name"
+                    />
+                  </td>
+                  <td class="p-1 border border-gray-300">
+                    <input
+                      class="w-full border border-gray-400 px-1"
+                      value={entry.url}
+                      data-field="url"
+                    />
+                  </td>
+                  <td class="p-1 border border-gray-300">
+                    <input
+                      class="w-full border border-gray-400 px-1"
+                      value={entry.image || ""}
+                      data-field="image"
+                    />
+                  </td>
+                  <td class="p-1 border border-gray-300">
+                    <input
+                      class="w-24 border border-gray-400 px-1"
+                      value={entry.price || ""}
+                      data-field="price"
+                    />
+                  </td>
+                  <td class="p-1 border border-gray-300">
+                    <input
+                      class="w-full border border-gray-400 px-1"
+                      value={entry.note || ""}
+                      data-field="note"
+                    />
+                  </td>
+                  <td class="p-1 border border-gray-300">
+                    <input
+                      class="w-full border border-gray-400 px-1"
+                      value={entry.boughtBy || ""}
+                      data-field="boughtBy"
+                    />
+                  </td>
+                  <td class="p-1 border border-gray-300 text-center">
+                    <button
+                      class="save-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                      data-index={i}
+                    >
+                      Save
+                    </button>
+                    <button
+                      class="delete-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs"
+                      data-index={i}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add new entry form -->
+    <details open class="mb-10">
+      <summary class="text-2xl mb-2 font-semibold cursor-pointer"
+        >Add New Entry</summary
+      >
+      <div class="grid grid-cols-2 gap-x-6 gap-y-3 mt-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1"
+            >Name *</label
+          >
+          <input
+            id="new-name"
+            class="w-full border border-gray-400 rounded px-2 py-1"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1"
+            >URL *</label
+          >
+          <input
+            id="new-url"
+            class="w-full border border-gray-400 rounded px-2 py-1"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1"
+            >Image URL</label
+          >
+          <input
+            id="new-image"
+            class="w-full border border-gray-400 rounded px-2 py-1"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1"
+            >Price</label
+          >
+          <input
+            id="new-price"
+            class="w-full border border-gray-400 rounded px-2 py-1"
+          />
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-semibold text-gray-700 mb-1"
+            >Note</label
+          >
+          <input
+            id="new-note"
+            class="w-full border border-gray-400 rounded px-2 py-1"
+          />
+        </div>
+      </div>
+      <button
+        id="add-btn"
+        class="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold"
+      >
+        Add Entry
+      </button>
+      <span id="add-msg" class="ml-3 text-sm"></span>
+    </details>
+
+    <p class="text-gray-500 text-xs mt-8">
+      <a href="/owen-registry" class="underline text-blue-600"
+        >&larr; Back to public registry</a
+      >
+    </p>
+  </div>
+</Layout>
+
+<script>
+  import { actions } from "astro:actions";
+
+  const tbody = document.querySelector<HTMLTableElement>("[data-entries]");
+  let entries = JSON.parse(tbody?.dataset.entries || "[]");
+
+  // Save
+  for (const btn of document.querySelectorAll<HTMLButtonElement>(".save-btn")) {
+    const index = parseInt(btn.dataset.index ?? "-1");
+    btn.addEventListener("click", async () => {
+      const row = btn.closest("tr");
+      if (!row) return;
+      const inputs = Array.from(row.querySelectorAll("input"));
+      const entry = {
+        name: inputs[0].value,
+        url: inputs[1].value,
+        image: inputs[2].value || undefined,
+        price: inputs[3].value || undefined,
+        note: inputs[4].value || undefined,
+        boughtBy: inputs[5].value || undefined,
+      };
+      entries[index] = entry;
+      const ok = await actions.updateOwieRegistry({
+        owieRegistryJson: JSON.stringify(entries),
+      });
+      btn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+      btn.classList.add(ok ? "bg-green-600" : "bg-red-600");
+      btn.textContent = ok ? "Saved" : "Error";
+      setTimeout(() => {
+        btn.classList.remove("bg-green-600", "bg-red-600");
+        btn.classList.add("bg-blue-600", "hover:bg-blue-700");
+        btn.textContent = "Save";
+      }, 2000);
+    });
+  }
+
+  // Delete
+  for (const btn of document.querySelectorAll<HTMLButtonElement>(
+    ".delete-btn",
+  )) {
+    const index = parseInt(btn.dataset.index ?? "-1");
+    btn.addEventListener("click", async () => {
+      if (!confirm("Delete this entry?")) return;
+      entries.splice(index, 1);
+      const ok = await actions.updateOwieRegistry({
+        owieRegistryJson: JSON.stringify(entries),
+      });
+      if (ok) {
+        location.reload();
+      } else {
+        alert("Failed to delete entry.");
+      }
+    });
+  }
+
+  // Add
+  document.querySelector("#add-btn")?.addEventListener("click", async () => {
+    const name = document
+      .querySelector<HTMLInputElement>("#new-name")
+      ?.value?.trim();
+    const url = document
+      .querySelector<HTMLInputElement>("#new-url")
+      ?.value?.trim();
+    if (!name || !url) {
+      document
+        .querySelector("#add-msg")
+        ?.setAttribute("class", "ml-3 text-sm text-red-600");
+      document.querySelector("#add-msg")!.textContent =
+        "Name and URL are required.";
+      return;
+    }
+    const newEntry = {
+      name,
+      url,
+      image:
+        document.querySelector<HTMLInputElement>("#new-image")?.value?.trim() ||
+        undefined,
+      price:
+        document.querySelector<HTMLInputElement>("#new-price")?.value?.trim() ||
+        undefined,
+      note:
+        document.querySelector<HTMLInputElement>("#new-note")?.value?.trim() ||
+        undefined,
+    };
+    entries.push(newEntry);
+    const ok = await actions.updateOwieRegistry({
+      owieRegistryJson: JSON.stringify(entries),
+    });
+    if (ok) {
+      location.reload();
+    } else {
+      document
+        .querySelector("#add-msg")
+        ?.setAttribute("class", "ml-3 text-sm text-red-600");
+      document.querySelector("#add-msg")!.textContent = "Failed to add entry.";
+    }
+  });
+</script>

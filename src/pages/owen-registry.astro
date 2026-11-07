@@ -67,7 +67,7 @@ const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
                 ]}
                 data-index={i}
               >
-                {u.boughtBy ? `Bought by ${u.boughtBy}` : "Buy for Owie!"}
+                {u.boughtBy ? `Bought by ${u.boughtBy}` : "I bought this!"}
               </button>
             </div>
           );

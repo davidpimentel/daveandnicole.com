@@ -11,8 +11,17 @@
   },
   "kv_namespaces": [
     {
-      "binding": "DANDN_KV", // The variable name used in your Worker code
-      "id": "23a23712f02c46b48499bc5686878344", // The production KV namespace ID
+      "binding": "DANDN_KV",
+      "id": "23a23712f02c46b48499bc5686878344",
+    },
+    {
+      "binding": "SESSION",
+      "id": "0d9329a1a6f54c73a12e8ce13a0e9e85",
+    },
+  ],
+  "send_email": [
+    {
+      "name": "EMAIL",
     },
   ],
 }

@@ -15,10 +15,26 @@ export const server = {
   updateOwieRegistry: defineAction({
     input: z.object({
       owieRegistryJson: z.string(),
+      boughtBy: z.string().optional(),
+      boughtIndex: z.number().optional(),
     }),
 
-    handler: async ({ owieRegistryJson }, ctx) => {
+    handler: async ({ owieRegistryJson, boughtBy, boughtIndex }, ctx) => {
       await env.DANDN_KV.put("owen-entries", owieRegistryJson);
+      try {
+        if (boughtBy && boughtIndex !== undefined) {
+          const entries = JSON.parse(owieRegistryJson);
+          const entry = entries[boughtIndex];
+          await env.EMAIL.send({
+            to: "david.pimentel65@gmail.com",
+            from: "notification@daveandnicole.com",
+            subject: `${boughtBy} bought something!`,
+            text: JSON.stringify(entry, null, 2),
+          });
+        }
+      } catch (e) {
+        console.error("could not send email", e);
+      }
       return true;
     },
   }),

@@ -97,13 +97,17 @@ const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
       if (!name) return;
       localStorage.setItem("name", name);
       registry[entryIndex].boughtBy = name;
-      const ok = await actions.updateOwieRegistry({
+      const { data: ok, error } = await actions.updateOwieRegistry({
         owieRegistryJson: JSON.stringify(registry),
+        boughtBy: name,
+        boughtIndex: entryIndex,
       });
-      if (ok) {
+      if (ok && !error) {
         button.innerText = `Bought by ${name}`;
         button.disabled = true;
         alert("Thank you!");
+      } else {
+        alert("There was an error, tell Dave or Nicole about it!");
       }
     });
   }

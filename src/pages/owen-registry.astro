@@ -46,11 +46,11 @@ const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
         entries.map((u, i) => {
           return (
             <div class="flex flex-col items-center gap-4 h-full">
-              <a target="_blank" href={u.url}>
+              <a target="_blank" href={u.url} class="w-full h-full">
                 {u.image ? (
                   <img src={u.image} class="aspect-square" />
                 ) : (
-                  <div class="bg-gray-200 aspect-square flex items-center justify-center @container">
+                  <div class="bg-gray-200 aspect-square flex items-center justify-center @container w-full">
                     <i class="ph ph-image-broken text-[25cqi] text-gray-300" />
                   </div>
                 )}
@@ -90,8 +90,12 @@ const entries = (await env.DANDN_KV.get<Entry[]>("owen-entries", "json")) || [];
       ? parseInt(button.dataset.index)
       : -1;
     button.addEventListener("click", async () => {
-      const name = prompt("What's your name?");
+      const name = prompt(
+        "What's your name?",
+        localStorage.getItem("name") || "",
+      );
       if (!name) return;
+      localStorage.setItem("name", name);
       registry[entryIndex].boughtBy = name;
       const ok = await actions.updateOwieRegistry({
         owieRegistryJson: JSON.stringify(registry),
